@@ -1,18 +1,18 @@
 import glob
-from datetime import datetime
+import math
+from os import path, getcwd
 
 import pandas as pd
-import numpy as np
 
 from sklearn.preprocessing import StandardScaler
 from sklearn.metrics import mean_squared_error
 from lightgbm import LGBMRegressor, Booster
-from os import path, getcwd
-
-
-"""# Przygotowanie danych"""
 
 BASE_PATH = path.join(getcwd(), 'zadanie3')
+TEST_SIZE = 0.1
+SHIFTS = 5
+
+"""# Przygotowanie danych"""
 file_list = glob.glob(path.join(BASE_PATH, 'dane', '*'))
 datasets = []
 
@@ -125,9 +125,6 @@ result['delta_temp_zuz_interpolated'] = result['temp_zuz_interpolated'].diff().f
 
 """# Podział na zbiory"""
 
-import math
-
-TEST_SIZE = 0.1
 TRAIN_COLUMNS_INPUTS = ['reg_pyl_zwrot_liw4', 'zawartosc_c', 'zawartosc_s', 'zawartosc_fe', 'zawartosc_fep', 'zawartosc_sp']
 TRAIN_COLUMNS_HEAT = ['sumaryczna_moc_cieplna_odebrana', 'cieplo_pobrane_suma']
 TRAIN_COLUMNS_AIR = ['went_zad_obr_1', 'went_zad_obr_2', 'went_zad_obr_3']
@@ -152,17 +149,11 @@ for col in COLUMNS_TO_SCALE:
     X_test[col] = scaler.transform(X_test[col].values.reshape(-1, 1))
 
 COLUMNS_TO_SHIFT = ['reg_pyl_zwrot_liw4', 'zawartosc_c', 'zawartosc_s', 'zawartosc_fe', 'sumaryczna_moc_cieplna_odebrana', 'cieplo_pobrane_suma', 'went_zad_obr_1', 'went_zad_obr_2', 'went_zad_obr_3', 'zawartosc_fep', 'zawartosc_sp']
-SHIFTS = 5
 
 for col in COLUMNS_TO_SHIFT:
     for i in range(1, SHIFTS+1):
         X_train['{}_shift_{}'.format(col, i)] = X_train[col].shift(i, fill_value=X_train[col][0])
         X_test['{}_shift_{}'.format(col, i)] = X_test[col].shift(i, fill_value=X_test[col][0])
-
-"""# Model bazowy (naiwny)"""
-
-Y_baseline = result['temp_zuz_interpolated'][test_split-1:-1]
-mean_squared_error(Y_test, Y_baseline)
 
 """# Model LGBM zmiany temperatury"""
 
