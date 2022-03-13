@@ -1,5 +1,3 @@
-BASE_PATH = 'zadanie-3'
-
 import glob
 from datetime import datetime
 
@@ -9,12 +7,13 @@ import numpy as np
 from sklearn.preprocessing import StandardScaler
 from sklearn.metrics import mean_squared_error
 from lightgbm import LGBMRegressor, Booster
-from os import path
+from os import path, getcwd
+
 
 """# Przygotowanie danych"""
 
+BASE_PATH = path.join(getcwd(), 'zadanie3')
 file_list = glob.glob(path.join(BASE_PATH, 'dane', '*'))
-
 datasets = []
 
 for file_path in file_list:
@@ -82,7 +81,7 @@ dataset = dataset.rename(columns={
     '037tix00264.daca.pv': 'temp_wody_zasil_2' 
 })
 
-data_temp_zuz = pd.read_csv('/content/drive/MyDrive/CuValley/zadanie-3/temp_zuz.csv', sep=';')
+data_temp_zuz = pd.read_csv(path.join(BASE_PATH, 'temp_zuz.csv'), sep=';')
 data_temp_zuz['Czas'] = pd.to_datetime(data_temp_zuz['Czas'])
 data_temp_zuz = data_temp_zuz.set_index('Czas')
 
@@ -110,9 +109,7 @@ dataset['zawartosc_fe'] = dataset['reg_nadawy_koncentratu_suma'] * dataset['prob
 dataset['zawartosc_fep'] = dataset['reg_koncentrat_prazony_liw3'] * dataset['prazonka_fe']
 dataset['zawartosc_sp'] = dataset['reg_koncentrat_prazony_liw3'] * dataset['prazonka_s']
 
-"""# Połączone dane
-
-"""
+"""# Połączone dane"""
 
 # Drop duplicated indices (e.g. on the time zone shift)
 dataset = dataset[~dataset.index.duplicated(keep='first')]
